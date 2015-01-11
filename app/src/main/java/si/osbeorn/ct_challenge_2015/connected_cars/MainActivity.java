@@ -4,31 +4,38 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.Environment;
 import android.provider.MediaStore;
+import android.speech.RecognizerIntent;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.ListView;
 
 import java.io.File;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 
 
 public class MainActivity extends ActionBarActivity
 {
     private static final int TAKE_IMAGE_ACTIVITY_REQUEST_CODE = 1;
+    private static final int SPEAK_COMMAND_ACTIVITY_REQUEST_CODE = 1;
+
+    private ListView wordsList;
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
     {
         super.onCreate(savedInstanceState);
-        setContentView(si.osbeorn.ct_challenge_2015.connected_cars.R.layout.activity_main);
+        setContentView(R.layout.activity_main);
 
-        Button button = (Button) findViewById(si.osbeorn.ct_challenge_2015.connected_cars.R.id.takePicture);
-        button.setOnClickListener(new View.OnClickListener()
+        Button takePictureButton = (Button) findViewById(R.id.takePicture);
+        takePictureButton.setOnClickListener(new View.OnClickListener()
         {
             @Override
             public void onClick(View v)
@@ -36,6 +43,18 @@ public class MainActivity extends ActionBarActivity
                 onTakePictureButtonClick();
             }
         });
+
+        Button speakCommandButton = (Button) findViewById(R.id.speakCommand);
+        speakCommandButton.setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View v)
+            {
+                onSpeakCommandButtonClick();
+            }
+        });
+
+        wordsList = (ListView) findViewById(R.id.list);
     }
 
     @Override
@@ -63,6 +82,18 @@ public class MainActivity extends ActionBarActivity
         return super.onOptionsItemSelected(item);
     }
 
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data)
+    {
+        if (requestCode == SPEAK_COMMAND_ACTIVITY_REQUEST_CODE && resultCode == RESULT_OK)
+        {
+            // Populate the wordsList with the String values the recognition engine thought it heard
+            ArrayList<String> matches = data.getStringArrayListExtra(RecognizerIntent.EXTRA_RESULTS);
+            wordsList.setAdapter(new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, matches));
+        }
+        super.onActivityResult(requestCode, resultCode, data);
+    }
+
     public void onTakePictureButtonClick()
     {
         // create Intent to take a picture and return control to the calling application
@@ -84,6 +115,15 @@ public class MainActivity extends ActionBarActivity
                 startActivityForResult(intent, TAKE_IMAGE_ACTIVITY_REQUEST_CODE);
             }
         }
+    }
+
+    public void onSpeakCommandButtonClick()
+    {
+        Intent intent = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
+        intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL,
+                RecognizerIntent.LANGUAGE_MODEL_FREE_FORM);
+        intent.putExtra(RecognizerIntent.EXTRA_PROMPT, "Voice recognition Demo...");
+        startActivityForResult(intent, SPEAK_COMMAND_ACTIVITY_REQUEST_CODE);
     }
 
     private File createImageFile() throws IOException {
