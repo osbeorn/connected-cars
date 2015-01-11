@@ -90,7 +90,12 @@ public class MainActivity extends ActionBarActivity
             // Populate the wordsList with the String values the recognition engine thought it heard
             ArrayList<String> matches = data.getStringArrayListExtra(RecognizerIntent.EXTRA_RESULTS);
             wordsList.setAdapter(new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, matches));
+
+            processSpeakCommandMatches(matches);
         }
+
+        // Other onActivityResult events
+
         super.onActivityResult(requestCode, resultCode, data);
     }
 
@@ -145,5 +150,19 @@ public class MainActivity extends ActionBarActivity
         //mCurrentPhotoPath = image.getAbsolutePath();
 
         return image;
+    }
+
+    private void processSpeakCommandMatches(ArrayList<String> matches)
+    {
+        //if (matches.contains("take a picture") || matches.contains("take "))
+        //{
+            openCamera();
+        //}
+    }
+
+    private void openCamera()
+    {
+        Intent intent = new Intent(this, CameraActivity.class);
+        startActivity(intent);
     }
 }
