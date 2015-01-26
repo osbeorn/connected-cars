@@ -20,7 +20,6 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 
-
 public class MainActivity extends ActionBarActivity
 {
     private static final int TAKE_IMAGE_ACTIVITY_REQUEST_CODE = 1;
