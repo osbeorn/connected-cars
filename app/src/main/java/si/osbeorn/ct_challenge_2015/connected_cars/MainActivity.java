@@ -53,6 +53,16 @@ public class MainActivity extends ActionBarActivity
             }
         });
 
+        Button bluetoothButton = (Button) findViewById(R.id.useBluetooth);
+        bluetoothButton.setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View v)
+            {
+                onBluetoothButtonClick();
+            }
+        });
+
         wordsList = (ListView) findViewById(R.id.list);
     }
 
@@ -162,6 +172,12 @@ public class MainActivity extends ActionBarActivity
     private void openCamera()
     {
         Intent intent = new Intent(this, CameraActivity.class);
+        startActivity(intent);
+    }
+
+    private void onBluetoothButtonClick()
+    {
+        Intent intent = new Intent(this, BluetoothActivity.class);
         startActivity(intent);
     }
 }
