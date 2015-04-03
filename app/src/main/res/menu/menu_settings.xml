@@ -1,0 +1,8 @@
+<menu
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:context="si.osbeorn.ct_challenge_2015.connected_cars.SettingsActivity">
+    <!--item android:id="@+id/action_settings"
+          android:title="@string/action_settings"
+          android:orderInCategory="100"
+          app:showAsAction="never"/-->
+</menu>

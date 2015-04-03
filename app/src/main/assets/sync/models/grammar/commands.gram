@@ -1,0 +1,8 @@
+#JSGF V1.0;
+
+grammar commands;
+
+<takePictureCmd> = take a picture;
+<connectDeviceCmd> = connect device;
+
+public <basicCmd> = <takePictureCmd> | <connectDeviceCmd>;

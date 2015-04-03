@@ -21,4 +21,9 @@
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"/>
 
+    <Button
+        android:text="Naredi sliko!"
+        android:id="@+id/sendPictureCommand"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"/>
 </LinearLayout>

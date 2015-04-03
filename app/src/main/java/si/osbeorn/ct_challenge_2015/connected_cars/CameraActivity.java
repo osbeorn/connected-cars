@@ -1,11 +1,13 @@
 package si.osbeorn.ct_challenge_2015.connected_cars;
 
-import android.app.Activity;
 import android.content.Context;
-import android.graphics.PixelFormat;
+import android.content.Intent;
 import android.hardware.Camera;
-import android.support.v7.app.ActionBarActivity;
+import android.media.ExifInterface;
+import android.net.Uri;
 import android.os.Bundle;
+import android.provider.MediaStore;
+import android.support.v7.app.ActionBarActivity;
 import android.util.Log;
 import android.view.Display;
 import android.view.Menu;
@@ -14,10 +16,8 @@ import android.view.Surface;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.View;
-import android.view.Window;
 import android.view.WindowManager;
 import android.widget.Button;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import java.io.FileNotFoundException;
@@ -26,21 +26,33 @@ import java.io.IOException;
 
 public class CameraActivity extends ActionBarActivity implements SurfaceHolder.Callback
 {
-    Camera camera;
-    int cameraId;
+    // region Members
+    private static final String TAG = "CameraActivity";
 
-    SurfaceView surfaceView;
-    SurfaceHolder surfaceHolder;
-    Camera.PictureCallback rawCallback;
-    Camera.ShutterCallback shutterCallback;
-    Camera.PictureCallback jpegCallback;
+    private int cameraId;
+
+    private SurfaceView surfaceView;
+    private SurfaceHolder surfaceHolder;
+
+    private Camera camera;
+    private Camera.PictureCallback rawCallback;
+    private Camera.ShutterCallback shutterCallback;
+    private Camera.PictureCallback jpegCallback;
 
     private boolean inPreview = false;
     private boolean cameraConfigured=false;
 
     private Display display;
 
-    Button start, stop, capture;
+    private Button start, stop, capture;
+
+    private byte[] pictureData;
+    public static final String PICTURE_BYTE_DATA = "PICTURE_BYTE_DATA";
+
+
+    //endregion
+
+    //region Overrides
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -58,14 +70,14 @@ public class CameraActivity extends ActionBarActivity implements SurfaceHolder.C
                         | View.SYSTEM_UI_FLAG_FULLSCREEN);
         */
 
-        getWindow().getDecorView().setSystemUiVisibility(
-                View.SYSTEM_UI_FLAG_LAYOUT_STABLE
-                        //| View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
-                        | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
-                        //| View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
-                        | View.SYSTEM_UI_FLAG_FULLSCREEN
-                        //| View.SYSTEM_UI_FLAG_IMMERSIVE
-                        | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY);
+//        getWindow().getDecorView().setSystemUiVisibility(
+//                View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+//                        //| View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+//                        | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+//                        //| View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
+//                        | View.SYSTEM_UI_FLAG_FULLSCREEN
+//                        //| View.SYSTEM_UI_FLAG_IMMERSIVE
+//                        | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY);
 
 
         super.onCreate(savedInstanceState);
@@ -75,13 +87,14 @@ public class CameraActivity extends ActionBarActivity implements SurfaceHolder.C
 
         surfaceView = (SurfaceView)findViewById(R.id.camera_surface_view);
         surfaceHolder = surfaceView.getHolder();
+        surfaceHolder.setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS);
         surfaceHolder.addCallback(this);
 
         rawCallback = new Camera.PictureCallback()
         {
             public void onPictureTaken(byte[] data, Camera camera)
             {
-                Log.d("Log", "onPictureTaken - raw");
+                Log.d(TAG, "onPictureTaken - raw");
             }
         };
 
@@ -90,7 +103,7 @@ public class CameraActivity extends ActionBarActivity implements SurfaceHolder.C
         {
             public void onShutter()
             {
-                Log.i("Log", "onShutter'd");
+                Log.i(TAG, "onShutter'd");
             }
         };
 
@@ -98,25 +111,8 @@ public class CameraActivity extends ActionBarActivity implements SurfaceHolder.C
         {
             public void onPictureTaken(byte[] data, Camera camera)
             {
-                FileOutputStream outStream = null;
-
-                try
-                {
-                    outStream = new FileOutputStream(String.format("/sdcard/%d.jpg", System.currentTimeMillis()));
-                    outStream.write(data);
-                    outStream.close();
-                    Log.d("Log", "onPictureTaken - wrote bytes: " + data.length);
-                }
-                catch (FileNotFoundException e)
-                {
-                    e.printStackTrace();
-                }
-                catch (IOException e)
-                {
-                    e.printStackTrace();
-                } finally {}
-
-                Log.d("Log", "onPictureTaken - jpeg");
+                Log.d(TAG, "onPictureTaken - jpeg");
+                setActivityResult(data);
             }
         };
 
@@ -170,6 +166,52 @@ public class CameraActivity extends ActionBarActivity implements SurfaceHolder.C
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    //endregion
+
+    private void setActivityResult(byte[] pictureByteArray)
+    {
+        FileOutputStream outStream;
+        ExifInterface exif;
+
+        Intent intent = getIntent();
+        Uri uri = (Uri)intent.getParcelableExtra(MediaStore.EXTRA_OUTPUT);
+        String filePath = uri.getPath();
+
+        try
+        {
+            outStream = new FileOutputStream(filePath);
+            outStream.write(/*flippedPictureByteArray*/pictureByteArray);
+            outStream.close();
+
+            exif = new ExifInterface(filePath);
+            exif.setAttribute(ExifInterface.TAG_ORIENTATION,
+                              String.valueOf(ExifInterface.ORIENTATION_ROTATE_90));
+            exif.saveAttributes();
+
+            Log.d(TAG, "onPictureTaken - wrote bytes: " + /*flippedPictureByteArray*/pictureByteArray.length);
+
+            Intent resultIntent = getIntent();
+            resultIntent.putExtra(MediaStore.EXTRA_OUTPUT, uri);
+
+            setResult(RESULT_OK, resultIntent);
+            finish();
+        }
+        catch (FileNotFoundException e)
+        {
+            e.printStackTrace();
+        }
+        catch (IOException e)
+        {
+            e.printStackTrace();
+        }
+        finally {}
+    }
+
+    public void takePictureOrRecoding()
+    {
+        camera.takePicture(shutterCallback, rawCallback, jpegCallback);
     }
 
     public void takePictureOrRecording(View view)
@@ -277,7 +319,7 @@ public class CameraActivity extends ActionBarActivity implements SurfaceHolder.C
             }
             catch (Throwable t)
             {
-                Log.e("PreviewDemo-surfaceCallback", "Exception in setPreviewDisplay()", t);
+                Log.e(TAG, "Ex. in setPreviewDisplay()", t);
                 Toast.makeText(CameraActivity.this, t.getMessage(), Toast.LENGTH_LONG)
                      .show();
             }
@@ -285,7 +327,7 @@ public class CameraActivity extends ActionBarActivity implements SurfaceHolder.C
             if (!cameraConfigured)
             {
                 Camera.Parameters parameters = camera.getParameters();
-                //parameters = setAdditionalParameters(parameters);
+                parameters = setAdditionalParameters(parameters);
 
                 Camera.Size size = getBestPreviewSize(width, height, parameters);
 
@@ -304,6 +346,15 @@ public class CameraActivity extends ActionBarActivity implements SurfaceHolder.C
     {
         if (cameraConfigured && camera != null)
         {
+            camera.setPreviewCallback(new Camera.PreviewCallback()
+            {
+                @Override
+                public void onPreviewFrame(byte[] data, Camera camera)
+                {
+                    takePictureOrRecoding();
+                }
+            });
+
             camera.startPreview();
             inPreview=true;
         }

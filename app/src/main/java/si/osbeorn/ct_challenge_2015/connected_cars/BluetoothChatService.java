@@ -26,9 +26,11 @@ import android.os.Handler;
 import android.os.Message;
 import android.util.Log;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.Arrays;
 import java.util.UUID;
 
 /**
@@ -469,41 +471,159 @@ public class BluetoothChatService
 
         public void run() {
             Log.i(TAG, "BEGIN mConnectedThread");
-            byte[] buffer = new byte[1024];
-            int bytes;
 
-            // Keep listening to the InputStream while connected
+            boolean waitingForHeader = true;
+            ByteArrayOutputStream dataOutputStream = new ByteArrayOutputStream();
+            byte[] headerBytes = new byte[22];
+            byte[] digest = new byte[16];
+            int headerIndex = 0;
+            int remainingSize = 0;
+
             while (true) {
-                try {
-                    // Read from the InputStream
-                    bytes = mmInStream.read(buffer);
-                    Log.d(TAG, "Read: " + buffer.toString());
-                    // Send the obtained bytes to the UI Activity
-                    mHandler.obtainMessage(Constants.MESSAGE_READ, bytes, -1, buffer)
-                            .sendToTarget();
-                } catch (IOException e) {
-                    Log.e(TAG, "disconnected", e);
+                try
+                {
+                    if (waitingForHeader)
+                    {
+                        byte[] header = new byte[1];
+                        mmInStream.read(header, 0, 1);
+                        Log.v(TAG, "Received Header Byte: " + header[0]);
+                        headerBytes[headerIndex++] = header[0];
+
+                        if (headerIndex == 22)
+                        {
+                            if ((headerBytes[0] == Constants.HEADER_MSB) && (headerBytes[1] == Constants.HEADER_LSB))
+                            {
+                                Log.v(TAG, "Header Received.  Now obtaining length");
+                                byte[] dataSizeBuffer = Arrays.copyOfRange(headerBytes, 2, 6);
+                                //progressData.totalSize = Utils.byteArrayToInt(dataSizeBuffer);
+                                //progressData.remainingSize = progressData.totalSize;
+                                remainingSize = Utils.byteArrayToInt(dataSizeBuffer);
+                                //Log.v(TAG, "Data size: " + progressData.totalSize);
+                                digest = Arrays.copyOfRange(headerBytes, 6, 22);
+                                waitingForHeader = false;
+                                //sendProgress(progressData);
+                            }
+                            else
+                            {
+                                Log.e(TAG, "Did not receive correct header.  Closing socket");
+                                //socket.close();
+                                //handler.sendEmptyMessage(MessageType.INVALID_HEADER);
+                                break;
+                            }
+                        }
+
+                    } else
+                    {
+                        // Read the data from the stream in chunks
+                        byte[] buffer = new byte[Constants.CHUNK_SIZE];
+                        //Log.v(TAG, "Waiting for data.  Expecting " + progressData.remainingSize + " more bytes.");
+                        int bytesRead = mmInStream.read(buffer);
+                        Log.v(TAG, "Read " + bytesRead + " bytes into buffer");
+                        dataOutputStream.write(buffer, 0, bytesRead);
+                        //progressData.remainingSize -= bytesRead;
+                        remainingSize -= bytesRead;
+                        //sendProgress(progressData);
+
+                        if (remainingSize <= 0)
+                        {
+                            Log.v(TAG, "Expected data has been received.");
+
+                            mHandler
+                                .obtainMessage(Constants.MESSAGE_READ, -1, -1, dataOutputStream.toByteArray())
+                                .sendToTarget();
+
+                            waitingForHeader = true;
+                            dataOutputStream = new ByteArrayOutputStream();
+                            headerBytes = new byte[22];
+                            digest = new byte[16];
+                            headerIndex = 0;
+                            remainingSize = 0;
+
+                            //break;
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Log.e(TAG, "disconnected", ex);
                     connectionLost();
-                    // Start the service over to restart listening mode
                     BluetoothChatService.this.start();
                     break;
                 }
             }
+
+            // Keep listening to the InputStream while connected
+//            while (true)
+//            {
+//                try
+//                {
+//                    // Read from the InputStream
+//                    while ((bytes = mmInStream.read(buffer)) != 0)
+//                    {
+//                        baos.write(buffer);
+//                        break;
+//                    }
+//                    baos.flush();
+//
+//                    //Log.d(TAG, "Read: " + buffer.toString());
+//                    // Send the obtained bytes to the UI Activity
+//                    mHandler.obtainMessage(Constants.MESSAGE_READ, bytes, -1, baos.toByteArray())
+//                            .sendToTarget();
+//                }
+//                catch (IOException e)
+//                {
+//                    Log.e(TAG, "disconnected", e);
+//                    connectionLost();
+//                    // Start the service over to restart listening mode
+//                    BluetoothChatService.this.start();
+//                    break;
+//                }
+//            }
         }
 
         /**
          * Write to the connected OutStream.
          *
-         * @param buffer The bytes to write
+         * @param payload The payload to write
          */
-        public void write(byte[] buffer) {
-            try {
-                mmOutStream.write(buffer);
-                Log.d(TAG, "Write: " + buffer.toString());
+        public void write(byte[] payload) {
+            try
+            {
+                // send header
+                mmOutStream.write(Constants.HEADER_MSB);
+                mmOutStream.write(Constants.HEADER_LSB);
+
+                // send the payload size
+                mmOutStream.write(Utils.intToByteArray(payload.length));
+
+                // send the payload digest
+                byte[] digest = Utils.getDigest(payload);
+                mmOutStream.write(digest);
+
+                // send the payload
+                mmOutStream.write(payload);
+
+//                int bufferSize = 1;
+//                int numPackets = (int) Math.ceil((double)buffer.length / (double)bufferSize);
+//
+//                byte[] tmpBuffer = new byte[bufferSize];
+//                BufferedInputStream bis = new BufferedInputStream(new ByteArrayInputStream(buffer));
+//
+//                for (int i = 0; i < numPackets; i++)
+//                {
+//                    int read = bis.read(tmpBuffer);
+//                    if (read == -1)
+//                        break;
+//
+//                    mmOutStream.write(tmpBuffer);
+//                }
+
+                //Log.d(TAG, "Write: " + buffer.toString());
                 // Share the sent message back to the UI Activity
-                mHandler.obtainMessage(Constants.MESSAGE_WRITE, -1, -1, buffer)
-                        .sendToTarget();
-            } catch (IOException e) {
+//                mHandler.obtainMessage(Constants.MESSAGE_WRITE, -1, -1, buffer)
+//                        .sendToTarget();
+            }
+            catch (IOException e) {
                 Log.e(TAG, "Exception during write", e);
             }
         }

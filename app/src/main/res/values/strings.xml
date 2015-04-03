@@ -2,10 +2,16 @@
 <resources>
 
     <string name="app_name">ConnectedCars</string>
+
+    <!-- MainActivity -->
     <string name="hello_world">Hello world!</string>
     <string name="action_settings">Settings</string>
+    <string name="action_add_device">Add device</string>
+    <string name="action_make_discoverable">Make discoverable</string>
+
     <string name="title_activity_camera">CameraActivity</string>
     <string name="title_activity_bluetooth">BluetoothActivity</string>
+    <!-- MainActivity -->
 
     <!--  DeviceListActivity -->
     <string name="scanning">scanning for devices...</string>
@@ -15,5 +21,17 @@
     <string name="title_paired_devices">Paired Devices</string>
     <string name="title_other_devices">Other Available Devices</string>
     <string name="button_scan">Scan for devices</string>
+    <!--  DeviceListActivity -->
+
+    <string name="make_discoverable">Make discoverable</string>
+
+    <!-- SettingsActivity -->
+    <string name="title_activity_settings">SettingsActivity</string>
+    <string name="settings_general">General</string>
+    <string name="settings_isServer_summary">If this device is a server speech recognition will be enabled.</string>
+    <string name="settings_isServer_title">Is server?</string>
+
+    <!-- FacebookSDK -->
+    <string name="facebook_app_id">882644665127289</string>
 
 </resources>
