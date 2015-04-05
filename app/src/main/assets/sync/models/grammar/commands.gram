@@ -2,7 +2,12 @@
 
 grammar commands;
 
-<takePictureCmd> = take a picture;
-<connectDeviceCmd> = connect device;
+<takePictureCmd>    = take a picture [ front ];
+<connectDeviceCmd>  = connect device;
+<setDescriptionCmd> = set message;
+<sendCmd>           = send;
 
-public <basicCmd> = <takePictureCmd> | <connectDeviceCmd>;
+public <basicCmd> = <takePictureCmd>    |
+                    <connectDeviceCmd>  |
+                    <setDescriptionCmd> |
+                    <sendCmd>;

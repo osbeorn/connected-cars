@@ -67,7 +67,7 @@ public class SpeechActivity extends ActionBarActivity
                 }
 //                else
 //                {
-//                    //boolean isServer = settings.getBoolean(Settings.IS_SERVER, false);
+//                    //boolean isServer = settings.getBoolean(Settings.USE_SPEECH_RECOGNITION, false);
 //                    //if (isServer)
 //                    //recognizer.startListening(KWS_SEARCH);
 //                }

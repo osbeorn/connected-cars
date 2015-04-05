@@ -1,6 +1,6 @@
 <menu
     xmlns:tools="http://schemas.android.com/tools"
-    tools:context="si.osbeorn.ct_challenge_2015.connected_cars.SettingsActivity">
+    tools:context="si.osbeorn.ct_challenge_2015.connected_cars.activity.SettingsActivity">
     <!--item android:id="@+id/action_settings"
           android:title="@string/action_settings"
           android:orderInCategory="100"

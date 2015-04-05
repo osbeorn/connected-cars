@@ -5,8 +5,8 @@ import android.content.Context;
 
 import com.facebook.FacebookSdk;
 
-import si.osbeorn.ct_challenge_2015.connected_cars.SpeakerService;
-import si.osbeorn.ct_challenge_2015.connected_cars.SpeechRecognizerService;
+import si.osbeorn.ct_challenge_2015.connected_cars.service.SpeakerService;
+import si.osbeorn.ct_challenge_2015.connected_cars.service.SpeechRecognizerService;
 
 /**
  * Created by Benjamin on 2.4.2015.
@@ -35,8 +35,6 @@ public class ConnectedCarsApplication extends Application
 
         instance = this;
         instance.initialize();
-
-        FacebookSdk.sdkInitialize(context);
     }
 
     // region Private members
@@ -66,11 +64,12 @@ public class ConnectedCarsApplication extends Application
     {
         speechRecognizerService = new SpeechRecognizerService(context);
         speakerService = new SpeakerService(context);
+        FacebookSdk.sdkInitialize(context);
     }
 
     // region Getters
 
-    public synchronized SpeechRecognizerService getSpeechRecognizerService()
+    public SpeechRecognizerService getSpeechRecognizerService()
     {
         return speechRecognizerService;
     }

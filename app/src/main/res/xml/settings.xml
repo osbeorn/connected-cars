@@ -2,8 +2,8 @@
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
     <PreferenceCategory android:title="@string/settings_general">
         <CheckBoxPreference android:defaultValue="false"
-                            android:key="isServerSetting"
-                            android:summary="@string/settings_isServer_summary"
-                            android:title="@string/settings_isServer_title" />
+                            android:key="useSpeechRecognitionSetting"
+                            android:summary="@string/settings_useSpeechRecognition_summary"
+                            android:title="@string/settings_useSpeechRecognition_title" />
     </PreferenceCategory>
 </PreferenceScreen>

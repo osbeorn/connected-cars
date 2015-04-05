@@ -4,7 +4,7 @@
               android:layout_width="match_parent"
               android:layout_height="match_parent"
               android:orientation="vertical"
-              tools:context="si.osbeorn.ct_challenge_2015.connected_cars.SettingsActivity">
+              tools:context="si.osbeorn.ct_challenge_2015.connected_cars.activity.SettingsActivity">
 
     <android.support.v7.widget.Toolbar
         android:id="@+id/settings_actionbar"
