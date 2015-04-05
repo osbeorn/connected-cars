@@ -22,36 +22,24 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.Toast;
 
-import com.facebook.CallbackManager;
-import com.facebook.FacebookAuthorizationException;
-import com.facebook.FacebookCallback;
-import com.facebook.FacebookException;
-import com.facebook.ProfileTracker;
-import com.facebook.login.LoginManager;
-import com.facebook.login.LoginResult;
-import com.facebook.share.Sharer;
-import com.facebook.share.widget.ShareDialog;
-
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 
 import edu.cmu.pocketsphinx.Hypothesis;
 import edu.cmu.pocketsphinx.RecognitionListener;
-import si.osbeorn.ct_challenge_2015.connected_cars.lib.Commands;
-import si.osbeorn.ct_challenge_2015.connected_cars.service.BluetoothConnectionService;
+import si.osbeorn.ct_challenge_2015.connected_cars.R;
+import si.osbeorn.ct_challenge_2015.connected_cars.application.ConnectedCarsApplication;
 import si.osbeorn.ct_challenge_2015.connected_cars.lib.CommandMessage;
 import si.osbeorn.ct_challenge_2015.connected_cars.lib.CommandRequest;
 import si.osbeorn.ct_challenge_2015.connected_cars.lib.CommandResponse;
+import si.osbeorn.ct_challenge_2015.connected_cars.lib.Commands;
 import si.osbeorn.ct_challenge_2015.connected_cars.lib.Constants;
-import si.osbeorn.ct_challenge_2015.connected_cars.R;
+import si.osbeorn.ct_challenge_2015.connected_cars.lib.Utils;
+import si.osbeorn.ct_challenge_2015.connected_cars.service.BluetoothConnectionService;
 import si.osbeorn.ct_challenge_2015.connected_cars.service.SpeakerService;
 import si.osbeorn.ct_challenge_2015.connected_cars.service.SpeechRecognizerService;
-import si.osbeorn.ct_challenge_2015.connected_cars.lib.Utils;
-import si.osbeorn.ct_challenge_2015.connected_cars.application.ConnectedCarsApplication;
 
 
 public class BluetoothActivity extends ActionBarActivity implements RecognitionListener
@@ -91,53 +79,6 @@ public class BluetoothActivity extends ActionBarActivity implements RecognitionL
     private SpeechRecognizerService recognizer;
     private SpeakerService speaker;
 
-    private String pendingFilePath;
-
-    private CallbackManager callbackManager;
-    private ProfileTracker profileTracker;
-    private ShareDialog shareDialog;
-
-    private PendingAction pendingAction = PendingAction.NONE;
-    private enum PendingAction {
-        NONE,
-        POST_PHOTO,
-        POST_STATUS_UPDATE
-    }
-
-    private FacebookCallback<Sharer.Result> shareCallback = new FacebookCallback<Sharer.Result>() {
-        @Override
-        public void onCancel() {
-            Log.d("HelloFacebook", "Canceled");
-        }
-
-        @Override
-        public void onError(FacebookException error) {
-            Log.d("HelloFacebook", String.format("Error: %s", error.toString()));
-            String title = getString(R.string.error);
-            String alertMessage = error.getMessage();
-            showResult(title, alertMessage);
-        }
-
-        @Override
-        public void onSuccess(Sharer.Result result) {
-            Log.d("HelloFacebook", "Success!");
-            if (result.getPostId() != null) {
-                String title = getString(R.string.success);
-                String id = result.getPostId();
-                String alertMessage = getString(R.string.successfully_posted_post, id);
-                showResult(title, alertMessage);
-            }
-        }
-
-        private void showResult(String title, String alertMessage) {
-            new AlertDialog.Builder(BluetoothActivity.this)
-                    .setTitle(title)
-                    .setMessage(alertMessage)
-                    .setPositiveButton(R.string.ok, null)
-                    .show();
-        }
-    };
-
     // region Activity implementation
 
     @Override
@@ -145,11 +86,6 @@ public class BluetoothActivity extends ActionBarActivity implements RecognitionL
     {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_bluetooth);
-
-        if (savedInstanceState != null)
-        {
-            pendingFilePath = savedInstanceState.getString(PENDING_FILE_PATH_BUNDLE_KEY);
-        }
 
         mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
 
@@ -168,53 +104,6 @@ public class BluetoothActivity extends ActionBarActivity implements RecognitionL
 
         recognizer = ((ConnectedCarsApplication) getApplication()).getInstance().getSpeechRecognizerService();
         speaker = ((ConnectedCarsApplication) getApplication()).getInstance().getSpeakerService();
-
-        callbackManager = CallbackManager.Factory.create();
-
-        LoginManager.getInstance().registerCallback(callbackManager, new FacebookCallback<LoginResult>()
-        {
-            @Override
-            public void onSuccess(LoginResult loginResult)
-            {
-                // continue and share the image
-                shareResponse(pendingFilePath, true);
-            }
-
-            @Override
-            public void onCancel()
-            {
-                if (pendingAction != PendingAction.NONE)
-                {
-                    showAlert();
-                    pendingAction = PendingAction.NONE;
-                }
-                //updateUI();
-            }
-
-            @Override
-            public void onError(FacebookException exception)
-            {
-                if (pendingAction != PendingAction.NONE &&
-                    exception instanceof FacebookAuthorizationException)
-                {
-                    showAlert();
-                    pendingAction = PendingAction.NONE;
-                }
-                //updateUI();
-            }
-
-            private void showAlert()
-            {
-                new AlertDialog.Builder(BluetoothActivity.this)
-                        .setTitle(R.string.cancelled)
-                        .setMessage(R.string.permission_not_granted)
-                        .setPositiveButton(R.string.ok, null)
-                        .show();
-            }
-        });
-
-        shareDialog = new ShareDialog(this);
-        shareDialog.registerCallback(callbackManager, shareCallback);
     }
 
     @Override
@@ -274,14 +163,6 @@ public class BluetoothActivity extends ActionBarActivity implements RecognitionL
     }
 
     @Override
-    protected void onSaveInstanceState(Bundle outState)
-    {
-        super.onSaveInstanceState(outState);
-
-        outState.putString(PENDING_FILE_PATH_BUNDLE_KEY, pendingFilePath);
-    }
-
-    @Override
     public boolean onCreateOptionsMenu(Menu menu)
     {
         // Inflate the menu; this adds items to the action bar if it is present.
@@ -314,7 +195,6 @@ public class BluetoothActivity extends ActionBarActivity implements RecognitionL
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        callbackManager.onActivityResult(requestCode, resultCode, data);
 
         switch (requestCode)
         {
@@ -414,13 +294,6 @@ public class BluetoothActivity extends ActionBarActivity implements RecognitionL
                 recognized = true;
                 selectDeviceForConnection();
         }
-
-//        MediaPlayer mp =
-//            recognized
-//                ? MediaPlayer.create(BluetoothActivity.this, R.raw.nfcsuccess)
-//                : MediaPlayer.create(BluetoothActivity.this, R.raw.nfcfailure);
-//
-//        mp.start();
     }
 
     @Override
@@ -453,57 +326,11 @@ public class BluetoothActivity extends ActionBarActivity implements RecognitionL
         //byte[] pictureByteArray = data.getByteArrayExtra(CameraActivity.PICTURE_BYTE_DATA);
         Uri uri = (Uri) data.getParcelableExtra(MediaStore.EXTRA_OUTPUT);
 
-        byte[] pictureByteArray = getImageBytes(uri);
+        byte[] pictureByteArray = Utils.fileToByteArray(getContentResolver(), uri);
         CommandResponse response = (CommandResponse) data.getSerializableExtra(RESPONSE_OBJECT_EXTRA);
-
-//                    ByteArrayOutputStream out = new ByteArrayOutputStream();
-//
-//                    Deflater comp = new Deflater();
-//                    comp.setLevel(Deflater.DEFAULT_COMPRESSION);
-//
-//                    DeflaterOutputStream dos = new DeflaterOutputStream(out, comp);
-//
-//                    try
-//                    {
-//                        dos.write(pictureByteArray);
-//                        dos.finish();
-//                    } catch (IOException e)
-//                    {
-//                        e.printStackTrace();
-//                    }
 
         response.setPayload(pictureByteArray/*out.toByteArray()*/);
         sendCommand(response);
-    }
-
-    private byte[] getImageBytes(Uri uri)
-    {
-        try
-        {
-            InputStream iStream =  getContentResolver().openInputStream(uri);
-            ByteArrayOutputStream byteBuffer = new ByteArrayOutputStream();
-
-            int bufferSize = 1024;
-            byte[] buffer = new byte[bufferSize];
-            int len = 0;
-
-            while ((len = iStream.read(buffer)) != -1)
-            {
-                byteBuffer.write(buffer, 0, len);
-            }
-
-            return byteBuffer.toByteArray();
-        }
-        catch (FileNotFoundException e)
-        {
-            e.printStackTrace();
-        }
-        catch (IOException e)
-        {
-            e.printStackTrace();
-        }
-
-        return null;
     }
 
     // region UI <-> BluetoothChatService handler
@@ -564,20 +391,6 @@ public class BluetoothActivity extends ActionBarActivity implements RecognitionL
                         progressDialog.show();
                     }
                     break;
-//                case Constants.MESSAGE_DEVICE_NAME:
-//                    // save the connected device's name
-//                    mConnectedDeviceName = msg.getData().getString(Constants.DEVICE_NAME);
-//                    if (null != activity) {
-//                        Toast.makeText(activity, "Connected to "
-//                                + mConnectedDeviceName, Toast.LENGTH_SHORT).show();
-//                    }
-//                    break;
-//                case Constants.MESSAGE_TOAST:
-//                    if (null != activity) {
-//                        Toast.makeText(activity, msg.getData().getString(Constants.TOAST),
-//                                Toast.LENGTH_SHORT).show();
-//                    }
-//                    break;
             }
         }
     };
@@ -694,40 +507,6 @@ public class BluetoothActivity extends ActionBarActivity implements RecognitionL
         Intent intent = new Intent(BluetoothActivity.this, PostActivity.class);
         intent.putExtra(PostActivity.IMAGE_FILE_PATH_EXTRA, filePath);
         startActivity(intent);
-
-//        // first check if user is logged in
-//        if (AccessToken.getCurrentAccessToken() == null)
-//        {
-//            // save the filePath as class variable for later use
-//            pendingFilePath = filePath;
-//
-//            // perform login
-//            LoginManager
-//                .getInstance()
-//                .logInWithPublishPermissions(BluetoothActivity.this, Arrays.asList("publish_actions"));
-//        }
-//
-//        // user is logged in - continue with sharing
-//        Bitmap image = BitmapFactory.decodeFile(filePath);
-//
-//        SharePhoto sharePhoto = new SharePhoto.Builder()
-//            .setBitmap(image)
-//            .build();
-//
-//        ArrayList<SharePhoto> photos = new ArrayList<>();
-//        photos.add(sharePhoto);
-//
-//        SharePhotoContent sharePhotoContent = new SharePhotoContent.Builder()
-//            .setPhotos(photos)
-//            .build();
-//
-////        if (canPresentShareDialogWithPhotos) {
-//            shareDialog.show(sharePhotoContent);
-////        } else if (hasPublishPermission()) {
-////            ShareApi.share(sharePhotoContent, shareCallback);
-////        } else {
-////            pendingAction = PendingAction.POST_PHOTO;
-////        }
     }
 
     private String saveImageToDisk(byte[] data)
@@ -737,30 +516,11 @@ public class BluetoothActivity extends ActionBarActivity implements RecognitionL
 
         try
         {
-//            ByteArrayOutputStream out = new ByteArrayOutputStream();
-//
-//            InflaterInputStream iis = new InflaterInputStream(new ByteArrayInputStream(data));
-//
-//            byte[] buf = new byte[8192];
-//            while(iis.read(buf) > 0)
-//            {
-//                out.write(buf);
-//            }
-//
-//            byte[] decompressed = out.toByteArray();
-
-            //String fileName = String.format("/sdcard/%d.jpg", System.currentTimeMillis());
-
-            //outFile = new File(fileName);
             outFile = Utils.createTempFile(null, ".jpg");
             outStream = new FileOutputStream(outFile);
             outStream.write(data/*decompressed*/);
             outStream.close();
             Log.d("Log", "onPictureTaken - wrote bytes: " + data.length);
-
-            //Intent intent = new Intent(android.content.Intent.ACTION_VIEW);
-            //intent.setDataAndType(Uri.fromFile(outFile), "image/jpg");
-            //startActivity(intent);
         }
         catch (FileNotFoundException e)
         {

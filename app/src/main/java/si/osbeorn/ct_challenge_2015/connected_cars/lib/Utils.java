@@ -1,12 +1,16 @@
 package si.osbeorn.ct_challenge_2015.connected_cars.lib;
 
+import android.content.ContentResolver;
+import android.net.Uri;
 import android.os.Environment;
 import android.util.Log;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.ObjectInput;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutput;
@@ -46,10 +50,13 @@ public class Utils
 
     public static byte[] getDigest(byte[] data)
     {
-        try {
+        try
+        {
             MessageDigest messageDigest = MessageDigest.getInstance("MD5");
             return messageDigest.digest(data);
-        } catch (Exception ex) {
+        }
+        catch (Exception ex)
+        {
             Log.e("TAG", ex.toString());
             throw new UnsupportedOperationException("MD5 algorithm not available on this device.");
         }
@@ -158,5 +165,35 @@ public class Utils
         }
 
         return file;
+    }
+
+    public static byte[] fileToByteArray(ContentResolver contentResolver, Uri uri)
+    {
+        try
+        {
+            InputStream iStream =  contentResolver.openInputStream(uri);
+            ByteArrayOutputStream byteBuffer = new ByteArrayOutputStream();
+
+            int bufferSize = 1024;
+            byte[] buffer = new byte[bufferSize];
+            int len = 0;
+
+            while ((len = iStream.read(buffer)) != -1)
+            {
+                byteBuffer.write(buffer, 0, len);
+            }
+
+            return byteBuffer.toByteArray();
+        }
+        catch (FileNotFoundException e)
+        {
+            e.printStackTrace();
+        }
+        catch (IOException e)
+        {
+            e.printStackTrace();
+        }
+
+        return null;
     }
 }

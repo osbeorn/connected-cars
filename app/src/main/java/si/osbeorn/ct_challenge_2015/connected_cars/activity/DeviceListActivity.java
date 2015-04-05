@@ -43,9 +43,9 @@ import java.util.Set;
 import edu.cmu.pocketsphinx.Hypothesis;
 import edu.cmu.pocketsphinx.RecognitionListener;
 import si.osbeorn.ct_challenge_2015.connected_cars.R;
+import si.osbeorn.ct_challenge_2015.connected_cars.application.ConnectedCarsApplication;
 import si.osbeorn.ct_challenge_2015.connected_cars.lib.Settings;
 import si.osbeorn.ct_challenge_2015.connected_cars.service.SpeechRecognizerService;
-import si.osbeorn.ct_challenge_2015.connected_cars.application.ConnectedCarsApplication;
 
 /**
  * This Activity appears as a dialog. It lists any paired devices and
@@ -108,7 +108,7 @@ public class DeviceListActivity extends Activity implements RecognitionListener
         // one for newly discovered devices
         ArrayAdapter<String> pairedDevicesArrayAdapter =
                 new ArrayAdapter<String>(this, R.layout.device_name);
-        mNewDevicesArrayAdapter = new ArrayAdapter<String>(this, R.layout.device_name);
+        mNewDevicesArrayAdapter = new ArrayAdapter<>(this, R.layout.device_name);
 
         // Find and set up the ListView for paired devices
         pairedListView = (ListView) findViewById(R.id.paired_devices);
@@ -356,11 +356,13 @@ public class DeviceListActivity extends Activity implements RecognitionListener
         if (!textToNumberMap.containsKey(words[1]))
             return;
 
+        Integer number = textToNumberMap.get(words[1]);
+        if (number >= pairedListView.getAdapter().getCount())
+            return;
+
         mBtAdapter.cancelDiscovery();
 
-        Integer number = textToNumberMap.get(words[1]);
-
-        String deviceInfo = (String) pairedListView.getItemAtPosition(number - 1);
+        String deviceInfo = (String) pairedListView.getAdapter().getItem(number);
         String address = deviceInfo.substring(deviceInfo.length() - 17);
 
         // Create the result Intent and include the MAC address

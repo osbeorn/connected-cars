@@ -5,8 +5,8 @@ import android.app.ProgressDialog;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
+import android.support.v7.app.ActionBarActivity;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -156,7 +156,7 @@ public class PostActivity extends ActionBarActivity implements RecognitionListen
 
         if (text.equals(SpeechRecognizerService.KEYPHRASE))
             recognizer.switchSearch(SpeechRecognizerService.COMMANDS_SEARCH);
-        else if (text.equals("set description"))
+        else if (text.equals("set message"))
             recognizer.switchSearch(SpeechRecognizerService.LANGUAGE_SEARCH);
     }
 

@@ -92,7 +92,7 @@
 
         <activity
             android:name=".activity.PostActivity"
-            android:label="@string/title_activity_test" >
+            android:label="@string/title_activity_post" >
         </activity>
 
     </application>

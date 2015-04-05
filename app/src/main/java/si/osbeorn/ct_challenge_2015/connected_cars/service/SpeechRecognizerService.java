@@ -79,6 +79,7 @@ public class SpeechRecognizerService
     {
         if (isRecognitionAllowed())
         {
+            setPreviousSearchName();
             recognizer.stop();
 
             if (searchName.equals(KWS_SEARCH))
@@ -96,6 +97,7 @@ public class SpeechRecognizerService
     {
         if (isRecognitionAllowed())
         {
+            setPreviousSearchName();
             recognizer.cancel();
             recognizer.removeListener(listener);
         }
@@ -105,6 +107,7 @@ public class SpeechRecognizerService
     {
         if (isRecognitionAllowed())
         {
+            setPreviousSearchName();
             recognizer.addListener(listener);
             recognizer.startListening(KWS_SEARCH);
         }
@@ -124,7 +127,7 @@ public class SpeechRecognizerService
     {
         File modelsDir = new File(assetsDir, "models");
 
-        Log.d("Assestr dir", assetsDir.getAbsolutePath());
+        Log.d("Assest dir", assetsDir.getAbsolutePath());
 
         recognizer = defaultSetup()
                 .setAcousticModel(new File(modelsDir, "hmm/en-us-semi"))
