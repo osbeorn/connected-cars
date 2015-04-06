@@ -367,6 +367,8 @@ public class MainActivity extends ActionBarActivity// implements RecognitionList
         }
 
         intent.putExtra(MediaStore.EXTRA_OUTPUT, Uri.fromFile(photoFile));
+        intent.putExtra(CameraActivity.ALLOW_USER_INTERACTION, true);
+
         startActivityForResult(intent, TAKE_IMAGE_ACTIVITY_REQUEST_CODE);
     }
 

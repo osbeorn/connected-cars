@@ -6,4 +6,5 @@ package si.osbeorn.ct_challenge_2015.connected_cars.lib;
 public interface Settings
 {
     public static final String USE_SPEECH_RECOGNITION = "useSpeechRecognitionSetting";
+    public static final String KEY_PHRASE_SPEECH = "keyphraseSpeechSetting";
 }

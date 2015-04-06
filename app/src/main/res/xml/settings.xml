@@ -5,5 +5,11 @@
                             android:key="useSpeechRecognitionSetting"
                             android:summary="@string/settings_useSpeechRecognition_summary"
                             android:title="@string/settings_useSpeechRecognition_title" />
+
+        <EditTextPreference android:defaultValue="ok now"
+                            android:key="keyphraseSpeechSetting"
+                            android:summary="@string/settings_keyphraseSpeech_summary"
+                            android:title="@string/settings_keyphraseSpeech_title" />
+
     </PreferenceCategory>
 </PreferenceScreen>

@@ -2,9 +2,12 @@ package si.osbeorn.ct_challenge_2015.connected_cars.activity;
 
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
+import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.Bundle;
 import android.support.v7.app.ActionBarActivity;
 import android.util.Log;
@@ -194,7 +197,19 @@ public class PostActivity extends ActionBarActivity implements RecognitionListen
     {
         try
         {
-            // first check if user is logged in
+            // first check for an active internet connection
+            if (!isOnline())
+            {
+                new AlertDialog.Builder(PostActivity.this)
+                        .setTitle("Internet connection")
+                        .setMessage("No active internet connection detected.\nCheck and try again later.")
+                        .setPositiveButton("OK", null)
+                        .show();
+
+                return;
+            }
+
+            // second check if user is logged in
             if (AccessToken.getCurrentAccessToken() == null)
             {
                 // perform login
@@ -251,5 +266,29 @@ public class PostActivity extends ActionBarActivity implements RecognitionListen
 
         imageBitmap = BitmapFactory.decodeFile(imageFilePath);
         ((ImageView) findViewById(R.id.imageToSend)).setImageBitmap(imageBitmap);
+    }
+
+    private boolean isOnline() {
+        boolean connected = false;
+
+        try {
+            ConnectivityManager connectivityManager =
+                (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+
+            NetworkInfo networkInfo = connectivityManager.getActiveNetworkInfo();
+            connected =
+                networkInfo != null &&
+                networkInfo.isAvailable() &&
+                networkInfo.isConnected();
+
+            return connected;
+        }
+        catch (Exception e)
+        {
+            System.out.println("CheckConnectivity Exception: " + e.getMessage());
+            Log.v("connectivity", e.toString());
+        }
+
+        return connected;
     }
 }

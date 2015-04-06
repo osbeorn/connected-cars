@@ -51,6 +51,7 @@ public class CameraActivity extends ActionBarActivity implements SurfaceHolder.C
     private byte[] pictureData;
 
     public static final String PICTURE_BYTE_DATA = "PICTURE_BYTE_DATA";
+    public static final String ALLOW_USER_INTERACTION = "ALLOW_USER_INTERACTION";
 
     private static final int DEFAULT_CAMERA_TYPE = Camera.CameraInfo.CAMERA_FACING_BACK;
 
@@ -358,14 +359,20 @@ public class CameraActivity extends ActionBarActivity implements SurfaceHolder.C
     {
         if (cameraConfigured && camera != null)
         {
-            camera.setPreviewCallback(new Camera.PreviewCallback()
+            Intent intent = getIntent();
+            boolean allowUserInteraction = intent.getBooleanExtra(CameraActivity.ALLOW_USER_INTERACTION, false);
+
+            if (!allowUserInteraction)
             {
-                @Override
-                public void onPreviewFrame(byte[] data, Camera camera)
+                camera.setPreviewCallback(new Camera.PreviewCallback()
                 {
-                    takePictureOrRecoding();
-                }
-            });
+                    @Override
+                    public void onPreviewFrame(byte[] data, Camera camera)
+                    {
+                        takePictureOrRecoding();
+                    }
+                });
+            }
 
             camera.startPreview();
             inPreview=true;

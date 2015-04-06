@@ -188,6 +188,11 @@ public class BluetoothActivity extends ActionBarActivity implements RecognitionL
             makeDiscoverableByBluetooth(300);
             return true;
         }
+        else if (id == R.id.file_list)
+        {
+            showFileListActivity();
+            return true;
+        }
 
         return super.onOptionsItemSelected(item);
     }
@@ -272,26 +277,24 @@ public class BluetoothActivity extends ActionBarActivity implements RecognitionL
             return;
 
             String text = hypothesis.getHypstr();
-            Toast.makeText(getApplicationContext(), text, Toast.LENGTH_SHORT).show();
 
-            boolean recognized = false;
             if (text.equals(SpeechRecognizerService.KEYPHRASE))
             {
-                recognized = true;
+                Toast.makeText(getApplicationContext(), text, Toast.LENGTH_SHORT).show();
             }
             else if (text.equals("take a picture"))
             {
-                recognized = true;
+                Toast.makeText(getApplicationContext(), text, Toast.LENGTH_SHORT).show();
                 sendCommand(Commands.TAKE_PICTURE);
             }
             else if (text.equals("take a picture front"))
             {
-                recognized = true;
+                Toast.makeText(getApplicationContext(), text, Toast.LENGTH_SHORT).show();
                 sendCommand(Commands.TAKE_PICTURE_FRONT);
             }
             else if (text.equals("connect device"))
             {
-                recognized = true;
+                Toast.makeText(getApplicationContext(), text, Toast.LENGTH_SHORT).show();
                 selectDeviceForConnection();
         }
     }
@@ -631,6 +634,12 @@ public class BluetoothActivity extends ActionBarActivity implements RecognitionL
     private void showSettingsActivity()
     {
         Intent intent = new Intent(this, SettingsActivity.class);
+        startActivity(intent);
+    }
+
+    private void showFileListActivity()
+    {
+        Intent intent = new Intent(this, FileListActivity.class);
         startActivity(intent);
     }
 }

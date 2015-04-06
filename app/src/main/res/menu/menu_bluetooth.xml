@@ -5,9 +5,14 @@
 
     <item android:id="@+id/make_discoverable"
           android:title="@string/make_discoverable"
-          android:orderInCategory="99"
+          android:orderInCategory="98"
           app:showAsAction="ifRoom"
           android:icon="@android:drawable/stat_sys_data_bluetooth"/>
+
+    <item android:id="@+id/file_list"
+          android:title="@string/file_list_option"
+          android:orderInCategory="99"
+          app:showAsAction="never" />
 
     <item android:id="@+id/action_settings"
           android:title="@string/action_settings"

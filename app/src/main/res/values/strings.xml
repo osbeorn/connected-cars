@@ -30,6 +30,8 @@
     <string name="settings_general">General</string>
     <string name="settings_useSpeechRecognition_summary">When enabled, the user can issue commands just by speaking them aloud.</string>
     <string name="settings_useSpeechRecognition_title">Enable speech recognition</string>
+    <string name="settings_keyphraseSpeech_summary">The keyphrase used to notify the application to start listening for commands. A restart is required if changed.</string>
+    <string name="settings_keyphraseSpeech_title">Speech recognition keyphrase</string>
 
     <!-- FacebookSDK -->
     <string name="facebook_app_id">882644665127289</string>
@@ -44,5 +46,7 @@
     <string name="title_activity_file_list">FileListActivity</string>
     <string name="title_activity_splash">SplashActivity</string>
     <string name="title_activity_post">PostActivity</string>
+
+    <string name="file_list_option">Recieved files</string>
 
 </resources>

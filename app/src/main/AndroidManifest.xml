@@ -9,6 +9,7 @@
     <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />
     <uses-permission android:name="android.permission.BLUETOOTH" />
     <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
 
     <uses-feature android:name="android.hardware.camera" />
 
@@ -36,6 +37,8 @@
         <activity
             android:name=".activity.CameraActivity"
             android:label="@string/title_activity_camera"
+            android:screenOrientation="portrait"
+            android:configChanges="orientation"
             android:parentActivityName=".activity.BluetoothActivity" >
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
@@ -82,7 +85,11 @@
 
         <activity
             android:name=".activity.FileListActivity"
-            android:label="@string/title_activity_file_list" >
+            android:label="@string/title_activity_file_list"
+            android:parentActivityName=".activity.BluetoothActivity">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value=".activity.BluetoothActivity" />
         </activity>
 
         <provider

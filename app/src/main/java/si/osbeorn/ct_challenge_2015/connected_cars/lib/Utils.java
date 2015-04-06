@@ -121,12 +121,15 @@ public class Utils
             try
             {
                 bis.close();
-            } catch (IOException ex) { }
+            }
+            catch (IOException ex) { }
+
             try
             {
                 if (in != null)
                     in.close();
-            } catch (IOException ex) { }
+            }
+            catch (IOException ex) { }
         }
 
         return object;

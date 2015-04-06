@@ -26,7 +26,9 @@ public class SpeechRecognizerService
     public static final String COMMANDS_SEARCH = "command";
     public static final String DIGITS_SEARCH = "digit";
     public static final String LANGUAGE_SEARCH = "language";
-    public static final String KEYPHRASE = "ok now";
+
+    public static String KEYPHRASE;
+    public static final String DEFAULT_KEYPHRASE = "ok now";
 
     private static final int RECOGNITION_TIMEOUT = 5000; // 5 seconds
 
@@ -42,37 +44,8 @@ public class SpeechRecognizerService
 
     public SpeechRecognizerService(Context context)
     {
-        if (recognizer == null)
-        {
-            try
-            {
-                Assets assets = new Assets(context);
-                File assetDir = assets.syncAssets();
-                setupRecognizer(assetDir);
-            }
-            catch (IOException e)
-            {
-                Log.e(TAG, "Error when initializing recognition activity.", e);
-            }
-        }
-
-        preferences = PreferenceManager.getDefaultSharedPreferences(context);
-        preferenceChangeListener = new SharedPreferences.OnSharedPreferenceChangeListener()
-        {
-            public void onSharedPreferenceChanged(SharedPreferences prefs, String key)
-            {
-                Log.d(TAG, "Settings key changed: " + key);
-                if (key.equals(Settings.USE_SPEECH_RECOGNITION))
-                {
-                    boolean useSpeechRecognition = preferences.getBoolean(Settings.USE_SPEECH_RECOGNITION, false);
-                    if (!useSpeechRecognition)
-                    {
-                        recognizer.cancel();
-                    }
-                }
-            }
-        };
-        preferences.registerOnSharedPreferenceChangeListener(preferenceChangeListener);
+        initializePreferences(context);
+        initializeRecognizer(context);
     }
 
     public synchronized void switchSearch(String searchName)
@@ -121,6 +94,50 @@ public class SpeechRecognizerService
     public synchronized String getPreviousSearchName()
     {
         return previousSearchName;
+    }
+
+    private void initializePreferences(Context context)
+    {
+        if (preferences != null)
+            return;
+
+        preferences = PreferenceManager.getDefaultSharedPreferences(context);
+        preferenceChangeListener = new SharedPreferences.OnSharedPreferenceChangeListener()
+        {
+            public void onSharedPreferenceChanged(SharedPreferences prefs, String key)
+            {
+                Log.d(TAG, "Settings key changed: " + key);
+                if (key.equals(Settings.USE_SPEECH_RECOGNITION))
+                {
+                    boolean useSpeechRecognition = preferences.getBoolean(Settings.USE_SPEECH_RECOGNITION, false);
+                    if (!useSpeechRecognition)
+                    {
+                        recognizer.cancel();
+                    }
+                }
+            }
+        };
+        preferences.registerOnSharedPreferenceChangeListener(preferenceChangeListener);
+
+        KEYPHRASE = preferences.getString(Settings.KEY_PHRASE_SPEECH,
+                SpeechRecognizerService.DEFAULT_KEYPHRASE);
+    }
+
+    private void initializeRecognizer(Context context)
+    {
+        if (recognizer != null)
+            return;
+
+        try
+        {
+            Assets assets = new Assets(context);
+            File assetDir = assets.syncAssets();
+            setupRecognizer(assetDir);
+        }
+        catch (IOException e)
+        {
+            Log.e(TAG, "Error when initializing recognition activity.", e);
+        }
     }
 
     private void setupRecognizer(File assetsDir) throws IOException
